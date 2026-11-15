@@ -99,37 +99,43 @@
             let opt = "";
             let num2 = "";
             let calculated = false;
+            let expressionPrefix = "";
+             
+        function showExpression() {
+            let symbol = opt;
+            let first = String(num1);
+            let second = num2;
 
-            function showExpression() {
-                let symbol = opt;
-                let first = String(num1);
-                let second = num2;
+            if(opt == "x") {
+                symbol = "x";
+            }
+            else if(opt == "÷") {
+                symbol = "÷";
+            }
 
-                if(opt == "x") {
-                    symbol = "×";
-                }
-                else if(opt == "/") {
-                    symbol = "÷";
-                }
+            if(num1 < 0) {
+                first = "(" + num1 + ")";
+            }
 
-                if(num1 < 0) {
-                    first = "(" + num1 + ")";
-                }
+            if(Number(num2) < 0) {
+                second = "(" + num2 + ")";
+            }
 
-                if(Number(num2) < 0) {
-                    second = "(" + num2 + ")";
-                }
+            if(expressionPrefix != "") {
+                first = expressionPrefix;
+            }
 
-                if(opt != "") {
-                    $('#disp2').val(first + symbol + second);
-                }
-            } <!--아래아래부터-->
-
+            if(opt != "") {
+                $('#disp2').val(first + symbol + second);
+            }
+        }
             
         $('.num').click(function(){
             let n = $(this).val();
 
+            
             if(calculated == true) {
+                expressionPrefix = "";
                 $('#disp1').val("");
                 $('#disp2').val(n);
                 num1 = 0;
@@ -137,6 +143,7 @@
                 num2 = "";
                 calculated = false;
             }
+
             else if(opt != "") {
                 if(num2 == "0") {
                     num2 = n;
@@ -210,8 +217,8 @@
                     }
 
                     if(calculated == true) {
+                        expressionPrefix = "";
                         calculated = false;
-                        $('#disp1').val("");
                     }
 
                     if(opt == "") {
@@ -220,9 +227,30 @@
                         num1 = Number(cur);
                     }
                     else if(num2 != "") {
-                        num1 = Number(num2);
-                    }
+                        expressionPrefix = $('#disp2').val();
+                        let second = Number(num2);
 
+                        if(opt == "+") {
+                            num1 = num1 + second;
+                        }
+                        else if(opt == "-") {
+                            num1 = num1 - second;
+                        }
+                        else if(opt == "x") {
+                            num1 = num1 * second;
+                        }
+                        else if(opt == "÷") {
+                            if(second == 0) {
+                                $('#disp1').val($('#disp2').val());
+                                $('#disp2').val("오류");
+                                opt = "";
+                                num2 = "";
+                                calculated = true;
+                                return;
+                            }
+                            num1 = num1 / second;
+                        }
+                    }
                     opt = n;
                     num2 = "";
                     showExpression();
@@ -245,7 +273,7 @@
                     else if(opt == "x") {
                         result = num1 * second;
                     }
-                    else if(opt == "/") {
+                    else if(opt == "÷") {
                         if(second == 0) {
                             $('#disp1').val(expression);
                             $('#disp2').val("오류");
@@ -271,6 +299,7 @@
                 let n = $(this).val();
 
                 if(n == "AC") {
+                    expressionPrefix = "";
                     $('#disp1').val("");
                     $('#disp2').val("0");
                     num1 = 0;
@@ -278,7 +307,7 @@
                     num2 = "";
                     calculated = false;
                 }
-                else if(n == "DEL") {
+                else if(n == "⌫") {
                     if(calculated == true) {
                         $('#disp1').val("");
                         calculated = false;
@@ -288,14 +317,25 @@
                         num2 = num2.slice(0,-1);
                         showExpression();
                     }
+                    
                     else {
                         let cur = $('#disp2').val();
 
-                        if(cur.length <= 1 || cur == "오류") {
+                        cur = cur.replace("(", "").replace(")", "");
+
+                        if(cur.length <= 1 || cur == "오류" ||
+                        (cur.length == 2 && cur.indexOf("-") == 0)) {
                             $('#disp2').val("0");
                         }
                         else {
-                            $('#disp2').val(cur.slice(0,-1));
+                            cur = cur.slice(0,-1);
+
+                            if(Number(cur) < 0) {
+                                $('#disp2').val("(" + cur + ")");
+                            }
+                            else {
+                                $('#disp2').val(cur);
+                            }
                         }
                     }
                 }
@@ -309,8 +349,21 @@
                     }
                 }
                 else {
-                    let cur = Number($('#disp2').val());
-                    $('#disp2').val(cur / 100);
+                    let cur = $('#disp2').val();
+
+                    if(cur == "오류") {
+                        return;
+                    }
+
+                    cur = cur.replace("(", "").replace(")", "");
+                    let result = Number(cur) / 100;
+
+                    if(result < 0) {
+                        $('#disp2').val("(" + result + ")");
+                    }
+                    else {
+                        $('#disp2').val(result);
+                    }
                 }
             });
 
@@ -322,8 +375,14 @@
                     }
                 }
                 else {
-                    let cur = Number($('#disp2').val());
-                    let result = cur * -1;
+                    let cur = $('#disp2').val();
+
+                    if(cur == "오류") {
+                        return;
+                    }
+
+                    cur = cur.replace("(", "").replace(")", "");
+                    let result = Number(cur) * -1;
 
                     if(result < 0) {
                         $('#disp2').val("(" + result + ")");
@@ -332,8 +391,7 @@
                         $('#disp2').val(result);
                     }
                 }
-            });
-
+            });   
         });
     </script>
 </head>
@@ -347,10 +405,10 @@
         </div>
 
         <div class="buttons">
-            <input type="button" class="func" value="DEL">
+            <input type="button" class="func" value="⌫">
             <input type="button" class="func" value="AC">
             <input type="button" class="percent" value="%">
-            <input type="button" class="op" value="/">
+            <input type="button" class="op" value="÷">
 
             <input type="button" class="num" value="7">
             <input type="button" class="num" value="8">
