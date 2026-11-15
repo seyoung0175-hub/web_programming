@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>세영's 계산기</title>
+
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+
+        #calc {
+            width: 340px;
+            margin: 60px auto;
+        }
+
+        .disp {
+            width: 100%;
+            background-color: black;
+            color: white;
+            border: none;
+            text-align: right;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        #disp1 {
+            height: 35px;
+            font-size: 25px;
+            color: #999999;
+        }
+
+        #disp2 {
+            height: 100px;
+            font-size: 65px;
+            margin-bottom: 20px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        input[type=button] {
+            width: 100%;
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 50%;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+            min-width: 0;
+        }
+
+        .num, .decimal, .sign {
+            background-color: #333333;
+        }
+
+        .func, .percent {
+            background-color: #666666;
+        }
+
+        .op {
+            background-color: #ff9500;
+        }
+
+        input[type=button]:active {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 400px) {
+            #calc {
+                width: 90%;
+                margin: 40px auto;
+            }
+
+            input[type=button] {
+                font-size: 25px;
+            }
+
+            #disp2 {
+                font-size: 55px;
+            }
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+
+            let num1 = 0;
+            let opt = "";
+            let num2 = "";
+            let calculated = false;
+
+            function showExpression() {
+                let symbol = opt;
+                let first = String(num1);
+                let second = num2;
+
+                if(opt == "x") {
+                    symbol = "×";
+                }
+                else if(opt == "/") {
+                    symbol = "÷";
+                }
+
+                if(num1 < 0) {
+                    first = "(" + num1 + ")";
+                }
+
+                if(Number(num2) < 0) {
+                    second = "(" + num2 + ")";
+                }
+
+                if(opt != "") {
+                    $('#disp2').val(first + symbol + second);
+                }
+            } <!--아래아래부터-->
+
+            
+        $('.num').click(function(){
+            let n = $(this).val();
+
+            if(calculated == true) {
+                $('#disp1').val("");
+                $('#disp2').val(n);
+                num1 = 0;
+                opt = "";
+                num2 = "";
+                calculated = false;
+            }
+            else if(opt != "") {
+                if(num2 == "0") {
+                    num2 = n;
+                }
+                else {
+                    num2 = num2 + n;
+                }
+                showExpression();
+            }
+            else {
+                let cur = $('#disp2').val();
+
+                if(cur.indexOf("(") != -1) {
+                    cur = cur.replace("(", "").replace(")", "");
+                }
+
+                if(cur == "0" || cur == "오류") {
+                    $('#disp2').val(n);
+                }
+                else {
+                    let result = cur + n;
+
+                    if(Number(result) < 0) {
+                        $('#disp2').val("(" + result + ")");
+                    }
+                    else {
+                        $('#disp2').val(result);
+                    }
+                }
+            }
+        });
+
+
+            $('.decimal').click(function(){
+                if(calculated == true) {
+                    $('#disp1').val("");
+                    $('#disp2').val("0.");
+                    opt = "";
+                    num2 = "";
+                    calculated = false;
+                }
+                else if(opt != "") {
+                    if(num2.indexOf(".") == -1) {
+                        if(num2 == "") {
+                            num2 = "0.";
+                        }
+                        else {
+                            num2 = num2 + ".";
+                        }
+                        showExpression();
+                    }
+                }
+                else {
+                    let cur = $('#disp2').val();
+
+                    if(cur == "오류") {
+                        $('#disp2').val("0.");
+                    }
+                    else if(cur.indexOf(".") == -1) {
+                        $('#disp2').val(cur+".");
+                    }
+                }
+            });
+
+            $('.op').click(function(){
+                let n = $(this).val();
+
+                if(n != "=") {
+                    if($('#disp2').val() == "오류") {
+                        return;
+                    }
+
+                    if(calculated == true) {
+                        calculated = false;
+                        $('#disp1').val("");
+                    }
+
+                    if(opt == "") {
+                        let cur = $('#disp2').val();
+                        cur = cur.replace("(", "").replace(")", "");
+                        num1 = Number(cur);
+                    }
+                    else if(num2 != "") {
+                        num1 = Number(num2);
+                    }
+
+                    opt = n;
+                    num2 = "";
+                    showExpression();
+                }
+                else {
+                    if(opt == "" || num2 == "") {
+                        return;
+                    }
+
+                    let result = 0;
+                    let second = Number(num2);
+                    let expression = $('#disp2').val();
+
+                    if(opt == "+") {
+                        result = num1 + second;
+                    }
+                    else if(opt == "-") {
+                        result = num1 - second;
+                    }
+                    else if(opt == "x") {
+                        result = num1 * second;
+                    }
+                    else if(opt == "/") {
+                        if(second == 0) {
+                            $('#disp1').val(expression);
+                            $('#disp2').val("오류");
+                            opt = "";
+                            num2 = "";
+                            calculated = true;
+                            return;
+                        }
+                        result = num1 / second;
+                    }
+
+                    $('#disp1').val(expression);
+                    $('#disp2').val(result);
+
+                    num1 = result;
+                    opt = "";
+                    num2 = "";
+                    calculated = true;
+                }
+            });
+
+            $('.func').click(function(){
+                let n = $(this).val();
+
+                if(n == "AC") {
+                    $('#disp1').val("");
+                    $('#disp2').val("0");
+                    num1 = 0;
+                    opt = "";
+                    num2 = "";
+                    calculated = false;
+                }
+                else if(n == "DEL") {
+                    if(calculated == true) {
+                        $('#disp1').val("");
+                        calculated = false;
+                    }
+
+                    if(opt != "") {
+                        num2 = num2.slice(0,-1);
+                        showExpression();
+                    }
+                    else {
+                        let cur = $('#disp2').val();
+
+                        if(cur.length <= 1 || cur == "오류") {
+                            $('#disp2').val("0");
+                        }
+                        else {
+                            $('#disp2').val(cur.slice(0,-1));
+                        }
+                    }
+                }
+            });
+
+            $('.percent').click(function(){
+                if(opt != "") {
+                    if(num2 != "") {
+                        num2 = String(Number(num2) / 100);
+                        showExpression();
+                    }
+                }
+                else {
+                    let cur = Number($('#disp2').val());
+                    $('#disp2').val(cur / 100);
+                }
+            });
+
+            $('.sign').click(function(){
+                if(opt != "") {
+                    if(num2 != "") {
+                        num2 = String(Number(num2) * -1);
+                        showExpression();
+                    }
+                }
+                else {
+                    let cur = Number($('#disp2').val());
+                    let result = cur * -1;
+
+                    if(result < 0) {
+                        $('#disp2').val("(" + result + ")");
+                    }
+                    else {
+                        $('#disp2').val(result);
+                    }
+                }
+            });
+
+        });
+    </script>
+</head>
+
+<body>
+    <div id="calc">
+
+        <div>
+            <input type="text" class="disp" id="disp1" readonly>
+            <input type="text" class="disp" id="disp2" value="0" readonly>
+        </div>
+
+        <div class="buttons">
+            <input type="button" class="func" value="DEL">
+            <input type="button" class="func" value="AC">
+            <input type="button" class="percent" value="%">
+            <input type="button" class="op" value="/">
+
+            <input type="button" class="num" value="7">
+            <input type="button" class="num" value="8">
+            <input type="button" class="num" value="9">
+            <input type="button" class="op" value="x">
+
+            <input type="button" class="num" value="4">
+            <input type="button" class="num" value="5">
+            <input type="button" class="num" value="6">
+            <input type="button" class="op" value="-">
+
+            <input type="button" class="num" value="1">
+            <input type="button" class="num" value="2">
+            <input type="button" class="num" value="3">
+            <input type="button" class="op" value="+">
+
+            <input type="button" class="sign" value="+/-">
+            <input type="button" class="num" value="0">
+            <input type="button" class="decimal" value=".">
+            <input type="button" class="op" value="=">
+        </div>
+
+    </div>
+</body>
+</html>
