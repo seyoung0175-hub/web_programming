@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    h1 { text-align: center; }
+    .disp{ width:205px; height: 40px; margin-top: 3px; }
+    .disp{ font-family: "0xanium", sans-serif; font-size: 22pt; text-align: right; }
+    input[type=button] { width: 50px; height: 50px; text-align: center; vertical-align: middle; margin-top: 5px; }
+    #calc { width: 220px; margin-left: auto; margin-right: auto; }
+</style>
+<script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function(){
+        let num1 = 0;
+        let opt = "";
+
+        $('.num').click(function(){
+            let cur = $('#disp2').val();
+            let n = $(this).val();
+            $('#disp2').val(cur+n);
+        });
+
+        $('.op').click(function(){
+            let cur = $('#disp2').val();
+            let n = $(this).val();
+
+            if(n != "=") {
+                num1 = Number(cur);
+                opt = n;
+                $('#disp1').val(cur+n);
+                $('#disp2').val("");
+            }
+            else {
+                let num2 = Number(cur);
+                let result = 0;
+
+                if(opt == "+") {
+                    result = num1 + num2;
+                }
+                else if(opt == "-") {
+                    result = num1 - num2;
+                }
+                else if(opt == "*") {
+                    result = num1 * num2;
+                }
+                else if(opt == "/") {
+                    result = num1 / num2;
+                }
+
+                $('#disp2').val(result);
+                $('#disp1').val("");
+                opt = "";
+            }
+        });
+
+        $('.func').click(function(){
+            $('#disp1').val("");
+            $('#disp2').val("");
+            num1 = 0;
+            opt = "";
+        });
+    });
+</script>
+<body>
+    <h1>계산기</h1>
+    <div id="calc">
+        <div>
+            <input type="text" class="disp" id="disp1" readonly>
+            <input type="text" class="disp" id="disp2" readonly>
+        </div>
+        <input type="button" class="num" value="7">
+        <input type="button" class="num" value="8">
+        <input type="button" class="num" value="9">
+        <input type="button" class="op" value="+"><br>
+        <input type="button" class="num" value="4">
+        <input type="button" class="num" value="5">
+        <input type="button" class="num" value="6">
+        <input type="button" class="op" value="-"><br>
+        <input type="button" class="num" value="1">
+        <input type="button" class="num" value="2">
+        <input type="button" class="num" value="3">
+        <input type="button" class="op" value="*"><br>
+        <input type="button" class="func" value="AC">
+        <input type="button" class="num" value="0">
+        <input type="button" class="op" value="=">
+        <input type="button" class="op" value="/"><br>
+    </div>    
+</body>
+</html>
+<!--리셋기능이랑.. 뭐 이런저런 기능까지 추가해서 과제..
+ai 활용한다면 프롬포트까지-->
